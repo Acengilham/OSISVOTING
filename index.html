@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting OSIS - AT-THOHARIYAH</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-attachment: fixed;
+        }
+        
+        .school-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px 30px;
+            margin: 30px auto;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .school-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .school-name {
+            color: var(--primary-color);
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .school-subtitle {
+            color: var(--secondary-color);
+            font-size: 1.4rem;
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 30px auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            min-height: 60vh;
+        }
+        
+        .menu-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-bottom: 25px;
+            border: none;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .menu-card:hover::before {
+            left: 100%;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+        
+        .menu-card i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .menu-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .menu-card p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .active-section {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .candidate-card {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: white;
+        }
+        
+        .candidate-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .candidate-photo {
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .candidate-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        
+        .candidate-card:hover .candidate-photo img {
+            transform: scale(1.1);
+        }
+        
+        .vote-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border: none;
+            border-radius: 30px;
+            padding: 12px 35px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .vote-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+        
+        .kode-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 18px;
+            margin: 12px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .kode-item:hover {
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .fullscreen-btn {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.4rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        }
+        
+        .timer-container {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .result-bar {
+            height: 35px;
+            background: #e9ecef;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .result-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .admin-nav {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .admin-nav .nav-link {
+            color: white;
+            border-radius: 15px;
+            margin: 0 8px;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .admin-nav .nav-link.active {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #2980b9 100%);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .admin-nav .nav-link:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .custom-field {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid var(--secondary-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .kode-group-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .kode-group-card:hover {
+            border-color: var(--secondary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 10px 25px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+        }
+        
+        .kode-input-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 2px solid #f8f9fa;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .school-name {
+                font-size: 2.2rem;
+            }
+            
+            .school-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .main-container {
+                padding: 25px;
+                margin: 20px auto;
+            }
+            
+            .menu-card {
+                padding: 30px 20px;
+            }
+            
+            .menu-card i {
+                font-size: 3rem;
+            }
+            
+            .timer-container {
+                font-size: 1.1rem;
+                padding: 10px 20px;
+            }
+            
+            .fullscreen-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .school-header {
+                padding: 30px 20px;
+            }
+            
+            .school-name {
+                font-size: 1.8rem;
+            }
+            
+            .main-container {
+                padding: 20px;
+            }
+            
+            .kode-input-card {
+                padding: 30px 20px;
+            }
+            /* Fullscreen Results Styles */
+#fullscreen-results {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.live-badge {
+    display: inline-block;
+    background: rgba(220, 53, 69, 0.8);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.blink {
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+.rank-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    z-index: 2;
+}
+
+.rank-badge.rank-1 {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+.rank-badge.rank-2 {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    color: #000;
+}
+
+.rank-badge.rank-3 {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    color: #fff;
+}
+
+.rank-circle-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border: 3px solid rgba(255,255,255,0.3);
+    font-weight: bold;
+    margin: 0 auto;
+}
+
+.rank-circle-large.rank-1 {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-color: #FFA500;
+    color: #000;
+}
+
+.rank-circle-large.rank-2 {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    border-color: #A9A9A9;
+    color: #000;
+}
+
+.rank-circle-large.rank-3 {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    border-color: #8B4513;
+    color: #fff;
+}
+
+.result-bar-large {
+    height: 25px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.result-fill-large {
+    height: 100%;
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    border-radius: 15px;
+    transition: width 1s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.result-fill-large::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+/* Card hover effects */
+#fullscreen-results .card {
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+#fullscreen-results .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Responsive design untuk fullscreen */
+@media (max-width: 768px) {
+    #fullscreen-results .display-4 {
+        font-size: 2rem;
+    }
+    
+    #fullscreen-results h3 {
+        font-size: 1.5rem;
+    }
+    
+    .rank-circle-large {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .rank-circle-large h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Fullscreen button style */
+.fullscreen-results-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.fullscreen-results-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+        }
+        /* Style untuk tombol hapus */
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Style untuk kode group card dengan hover effect */
+.kode-group-card {
+    transition: all 0.3s ease;
+}
+
+.kode-group-card:hover {
+    border-color: #dc3545;
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1);
+}
+
+/* Style untuk tombol aksi grup */
+.kode-group-card .btn-group {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.kode-group-card:hover .btn-group {
+    opacity: 1;
+}
+/* Horizontal Bar Chart Styles */
+.horizontal-chart-container {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.horizontal-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.horizontal-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.horizontal-bar-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(10px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.horizontal-bar-item.first-place {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    transform: scale(1.02);
+}
+
+.horizontal-bar-item.second-place {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(169, 169, 169, 0.05));
+    border: 2px solid rgba(192, 192, 192, 0.5);
+}
+
+.horizontal-bar-item.third-place {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(139, 69, 19, 0.05));
+    border: 2px solid rgba(205, 127, 50, 0.5);
+}
+
+.bar-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 300px;
+    flex-shrink: 0;
+}
+
+.candidate-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rank-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: white;
+}
+
+.horizontal-bar-item.first-place .rank-number {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-color: #FFA500;
+    color: #000;
+    animation: pulse-gold 2s infinite;
+}
+
+.horizontal-bar-item.second-place .rank-number {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    border-color: #A9A9A9;
+    color: #000;
+}
+
+.horizontal-bar-item.third-place .rank-number {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    border-color: #8B4513;
+    color: #fff;
+}
+
+.candidate-info {
+    flex: 1;
+}
+
+.candidate-name-wrapper {
+    margin-bottom: 5px;
+}
+
+.candidate-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.horizontal-bar-item.first-place .candidate-name {
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.horizontal-bar-item.second-place .candidate-name {
+    color: #C0C0C0;
+}
+
+.horizontal-bar-item.third-place .candidate-name {
+    color: #CD7F32;
+}
+
+.votes-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.votes-count {
+    font-size: 1rem;
+    color: #2ecc71;
+    font-weight: 600;
+    background: rgba(46, 204, 113, 0.1);
+    padding: 3px 10px;
+    border-radius: 10px;
+}
+
+.percentage {
+    font-size: 1rem;
+    color: #3498db;
+    font-weight: 600;
+    background: rgba(52, 152, 219, 0.1);
+    padding: 3px 10px;
+    border-radius: 10px;
+}
+
+.bar-track {
+    flex: 1;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.horizontal-bar {
+    height: 100%;
+    border-radius: 20px;
+    position: relative;
+    transition: width 1.5s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 15px;
+    min-width: 60px;
+}
+
+.bar-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, currentColor, rgba(255, 255, 255, 0.8));
+}
+
+.bar-value {
+    position: relative;
+    z-index: 2;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Warna untuk horizontal bars */
+.bar-gold {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    color: #FFA500;
+}
+
+.bar-silver {
+    background: linear-gradient(90deg, #C0C0C0, #A9A9A9);
+    color: #A9A9A9;
+}
+
+.bar-bronze {
+    background: linear-gradient(90deg, #CD7F32, #8B4513);
+    color: #8B4513;
+}
+
+.bar-secondary {
+    background: linear-gradient(90deg, #6c757d, #495057);
+    color: #495057;
+}
+
+/* Animations */
+@keyframes pulse-gold {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes barGrow {
+    from { width: 0%; }
+    to { width: attr(style); }
+}
+
+.horizontal-bar {
+    animation: barGrow 1.5s ease-out;
+}
+
+/* Shimmer effect */
+.bar-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .bar-info-wrapper {
+        min-width: 250px;
+    }
+    
+    .candidate-name {
+        font-size: 1.1rem;
+    }
+    
+    .rank-number {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .horizontal-bar-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .bar-info-wrapper {
+        min-width: auto;
+        justify-content: space-between;
+    }
+    
+    .candidate-info {
+        flex: 1;
+    }
+    
+    .candidate-name {
+        font-size: 1rem;
+    }
+    
+    .votes-info {
+        justify-content: space-between;
+    }
+    
+    .bar-track {
+        height: 35px;
+    }
+    
+    .rank-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .horizontal-chart-container {
+        padding: 10px;
+    }
+    
+    .bar-info-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .candidate-rank {
+        align-self: flex-start;
+    }
+    
+    .candidate-name {
+        font-size: 0.9rem;
+    }
+    
+    .votes-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .bar-track {
+        height: 30px;
+    }
+}
+/* Settings Tab Styles */
+.server-status-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.server-info-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.system-health-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    height: 100%;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-block;
+}
+
+.status-online {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.status-offline {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.status-warning {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f39c12;
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.status-error {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.status-checking {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+/* Health Indicators */
+.health-indicator {
+    font-size: 1.1rem;
+}
+
+.health-online {
+    color: #2ecc71;
+}
+
+.health-offline {
+    color: #e74c3c;
+}
+
+.health-warning {
+    color: #f39c12;
+}
+
+.health-error {
+    color: #e74c3c;
+}
+
+.health-unknown {
+    color: #95a5a6;
+}
+
+/* Info Items */
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-item .label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.info-item .value {
+    color: #3498db;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+    margin-top: 20px;
+}
+
+/* Health Summary */
+.health-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.health-summary h5 {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Logs */
+.logs-container {
+    background: #1a1a1a !important;
+    color: #00ff00;
+    border: 1px solid #333;
+}
+
+.log-entry {
+    margin-bottom: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+}
+
+.text-success {
+    color: #00ff00 !important;
+}
+
+.text-info {
+    color: #3498db !important;
+}
+
+.text-warning {
+    color: #f39c12 !important;
+}
+
+.text-danger {
+    color: #e74c3c !important;
+}
+
+/* Progress bars */
+.progress {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .server-status-card,
+    .server-info-card,
+    .system-health-card {
+        padding: 15px;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .info-item .value {
+        margin-top: 5px;
+        font-size: 0.8rem;
+    }
+}
+/* Scrollbar styling */
+.horizontal-chart-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.horizontal-chart-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.horizontal-chart-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.horizontal-chart-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+/* Footer Styles */
+.footer {
+    margin-top: auto;
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 73, 94, 0.9) 100%);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+    background-size: 200% 100%;
+    animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.footer-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Responsive footer */
+@media (max-width: 768px) {
+    .footer {
+        text-align: center;
+    }
+    
+    .footer .col-md-6 {
+        margin-bottom: 10px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Timer -->
+    <div class="timer-container" id="voting-timer" style="display: none;">
+        <i class="fas fa-clock me-2"></i>
+        <span id="timer-display">00:00:00</span>
+    </div>
+
+    <!-- Fullscreen Button -->
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" style="display: none;">
+        <i class="fas fa-expand"></i>
+    </button>
+
+    <!-- Header Sekolah -->
+    <div class="container">
+        <div class="school-header">
+            <h1 class="school-name">AT-THOHARIYAH</h1>
+            <p class="school-subtitle">Sistem Voting Digital Pemilihan Ketua OSIS</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="main-container">
+            <!-- Menu Utama -->
+            <div id="main-menu" class="section active-section">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <div class="menu-card" onclick="showSection('voting-section')">
+                            <i class="fas fa-vote-yea"></i>
+                            <h3>MASUK VOTING</h3>
+                            <p>Gunakan kode unik untuk memilih calon ketua OSIS</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="menu-card" onclick="showSection('admin-section')">
+                            <i class="fas fa-user-shield"></i>
+                            <h3>PANEL ADMIN</h3>
+                            <p>Kelola kandidat dan generate kode voting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voting Section -->
+            <div id="voting-section" class="section">
+                <!-- Input Kode -->
+                <div id="kode-input-section">
+                    <div class="kode-input-card">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-key fa-3x text-primary mb-3"></i>
+                            <h3 class="mb-3">Masukkan Kode Voting</h3>
+                            <p class="text-muted">Gunakan kode unik yang telah diberikan</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <input type="text" class="form-control form-control-lg text-center" 
+                                   id="kode-input" placeholder="Contoh: A1, A2, B1, ..." 
+                                   style="font-size: 1.4rem; letter-spacing: 2px; font-weight: bold; padding: 15px; border-radius: 15px; border: 2px solid #e9ecef;">
+                            <div id="kode-error" class="text-danger mt-2 text-center" style="display: none; font-weight: 500;"></div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-lg py-3" onclick="verifyKode()" style="border-radius: 15px; font-weight: 600;">
+                                <i class="fas fa-sign-in-alt me-2"></i> MASUK VOTING
+                            </button>
+                            <button class="btn btn-outline-secondary py-3" onclick="showSection('main-menu')" style="border-radius: 15px; font-weight: 500;">
+                                <i class="fas fa-arrow-left me-2"></i> KEMBALI KE MENU
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Kandidat -->
+                <div id="kandidat-section" style="display: none;">
+                    <div class="text-center mb-5">
+                        <h2 class="mb-3"><i class="fas fa-users me-2"></i>PILIH CALON KETUA OSIS</h2>
+                        <p class="text-muted">Pilih salah satu calon dengan menekan tombol "PILIH"</p>
+                    </div>
+                    <div class="row" id="candidates-container">
+                        <!-- Kandidat akan dimuat di sini -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Section -->
+            <div id="admin-section" class="section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <button class="btn back-btn" onclick="showSection('main-menu')">
+                        <i class="fas fa-arrow-left me-2"></i> Kembali
+                    </button>
+                    <h3 class="mb-0"><i class="fas fa-user-shield me-2"></i> PANEL ADMIN</h3>
+                </div>
+
+                <!-- Navigation Admin -->
+<ul class="nav admin-nav justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link active" href="#" onclick="showAdminTab('kandidat-tab')">
+            <i class="fas fa-users me-2"></i> Kelola Kandidat
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showAdminTab('kode-tab')">
+            <i class="fas fa-key me-2"></i> Generate Kode
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showAdminTab('riwayat-kode-tab')">
+            <i class="fas fa-history me-2"></i> Riwayat Kode
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showAdminTab('hasil-tab')">
+            <i class="fas fa-chart-bar me-2"></i> Hasil Voting
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showAdminTab('settings-tab')">
+            <i class="fas fa-cog me-2"></i> Settings
+        </a>
+    </li>
+</ul>
+
+                <!-- Tab Kandidat -->
+                <div id="kandidat-tab" class="admin-tab">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent py-4">
+                            <h4 class="mb-0"><i class="fas fa-users me-2"></i> Kelola Kandidat</h4>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#kandidatModal" style="border-radius: 15px; padding: 12px 25px;">
+                                <i class="fas fa-plus me-2"></i> Tambah Kandidat
+                            </button>
+                            <div class="row" id="admin-candidates-container">
+                                <div class="col-12 text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Generate Kode -->
+                <div id="kode-tab" class="admin-tab" style="display: none;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent py-4">
+                            <h4 class="mb-0"><i class="fas fa-key me-2"></i> Generate Kode Voting</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Simbol Awalan</label>
+                                        <input type="text" class="form-control form-control-lg" id="kode-prefix" value="A" maxlength="3" style="border-radius: 15px; text-align: center; font-weight: bold;">
+                                        <div class="form-text">Contoh: A, B, KLS, dll</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Jumlah Kode</label>
+                                        <input type="number" class="form-control form-control-lg" id="kode-count" value="10" min="1" max="1000" style="border-radius: 15px; text-align: center;">
+                                        <div class="form-text">Maksimal 1000 kode pergrup</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Nama Grup</label>
+                                        <input type="text" class="form-control form-control-lg" id="kode-group-name" placeholder="Kelas X, Guru, dll" style="border-radius: 15px;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex flex-wrap gap-3 mb-4">
+                                <button class="btn btn-success px-4 py-3" onclick="generateKodes()" style="border-radius: 15px; font-weight: 600;">
+                                    <i class="fas fa-magic me-2"></i> Generate Kode
+                                </button>
+                                <button class="btn btn-primary px-4 py-3" onclick="saveKodes()" id="save-btn" disabled style="border-radius: 15px; font-weight: 600;">
+                                    <i class="fas fa-save me-2"></i> Simpan Kode
+                                </button>
+                                <button class="btn btn-warning px-4 py-3" onclick="cancelGenerate()" id="cancel-btn" disabled style="border-radius: 15px; font-weight: 600;">
+                                    <i class="fas fa-times me-2"></i> Batal
+                                </button>
+                                <button class="btn btn-info px-4 py-3" onclick="downloadKodes()" id="download-btn" disabled style="border-radius: 15px; font-weight: 600;">
+                                    <i class="fas fa-download me-2"></i> Download Excel
+                                </button>
+                                <button class="btn btn-secondary px-4 py-3" onclick="printKodes()" id="print-btn" disabled style="border-radius: 15px; font-weight: 600;">
+                                    <i class="fas fa-print me-2"></i> Print Kode
+                                </button>
+                            </div>
+
+                            <div class="mt-4">
+                                <h5 class="mb-3"><i class="fas fa-eye me-2"></i>Preview Kode (10 pertama):</h5>
+                                <div id="kode-preview" class="row g-3">
+                                    <!-- Preview kode akan dimuat di sini -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Riwayat Kode -->
+                <div id="riwayat-kode-tab" class="admin-tab" style="display: none;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent py-4">
+                            <h4 class="mb-0"><i class="fas fa-history me-2"></i> Riwayat Kode Voting</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row" id="kode-groups-container">
+                                <!-- Grup kode akan dimuat di sini -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Hasil Voting -->
+                <div id="hasil-tab" class="admin-tab" style="display: none;">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent py-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Hasil Voting Real-time</h4>
+                <div>
+                    <button class="btn btn-success me-2" onclick="downloadResults()" style="border-radius: 15px;">
+                        <i class="fas fa-file-excel me-2"></i> Download Excel
+                    </button>
+                    <button class="btn fullscreen-results-btn" onclick="showFullscreenResults()">
+                        <i class="fas fa-expand me-2"></i> Tampilkan Fullscreen
+                    </button>
+                </div>
+            </div>
+        </div>
+                        <div class="card-body">
+                            <dv class="row g-4 mb-4">
+                                <div class="col-md-3">
+                                    <div class="stats-card">
+                                        <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                                        <h5>Total Pemilih</h5>
+                                        <h3 id="total-pemilih" class="text-primary">0</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stats-card">
+                                        <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                                        <h5>Sudah Memilih</h5>
+                                        <h3 id="sudah-memilih" class="text-success">0</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stats-card">
+                                        <i class="fas fa-clock fa-2x text-warning mb-3"></i>
+                                        <h5>Belum Memilih</h5>
+                                        <h3 id="belum-memilih" class="text-warning">0</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stats-card">
+                                        <i class="fas fa-user-friends fa-2x text-info mb-3"></i>
+                                        <h5>Total Kandidat</h5>
+                                        <h3 id="total-kandidat" class="text-info">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="results-container">
+                                <!-- Hasil voting akan dimuat di sini -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Tab Settings -->
+<div id="settings-tab" class="admin-tab" style="display: none;">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent py-4">
+            <h4 class="mb-0"><i class="fas fa-cog me-2"></i> System Settings</h4>
+        </div>
+        <div class="card-body">
+            <!-- Server Calibration Section -->
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="mb-3"><i class="fas fa-server me-2"></i> Calibrasi Server</h5>
+                    <p class="text-muted mb-4">
+                        Periksa koneksi dan status database Firebase. Sistem akan otomatis mendeteksi masalah koneksi.
+                    </p>
+                    
+                    <div class="server-status-card mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h6>Status Koneksi Database</h6>
+                                <p class="mb-0 text-muted">Firebase Realtime Database</p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <span id="connection-status" class="status-badge status-offline">
+                                    <i class="fas fa-circle me-1"></i> Checking...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="server-info-card mb-4">
+                        <h6 class="mb-3">Informasi Server</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <span class="label">Project ID:</span>
+                                    <span class="value" id="info-projectid">database62-e9ae4</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Database URL:</span>
+                                    <span class="value" id="info-databaseurl">https://database62-e9ae4-default-rtdb.asia-southeast1.firebasedatabase.app</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <span class="label">Last Check:</span>
+                                    <span class="value" id="info-lastcheck">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Response Time:</span>
+                                    <span class="value" id="info-responsetime">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary me-3" onclick="calibrateServer()" id="calibrate-btn">
+                            <i class="fas fa-sync-alt me-2"></i> Calibrate Server
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="testDatabaseConnection()">
+                            <i class="fas fa-bug me-2"></i> Test Connection
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="system-health-card">
+                        <h6 class="mb-3"><i class="fas fa-heartbeat me-2"></i> System Health</h6>
+                        
+                        <div class="health-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Database Connection</span>
+                                <span id="health-db" class="health-indicator health-unknown">
+                                    <i class="fas fa-question-circle"></i>
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div id="health-db-progress" class="progress-bar bg-warning" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="health-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Authentication</span>
+                                <span id="health-auth" class="health-indicator health-unknown">
+                                    <i class="fas fa-question-circle"></i>
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div id="health-auth-progress" class="progress-bar bg-warning" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="health-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Data Read/Write</span>
+                                <span id="health-rw" class="health-indicator health-unknown">
+                                    <i class="fas fa-question-circle"></i>
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div id="health-rw-progress" class="progress-bar bg-warning" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="health-summary mt-4 p-3 rounded text-center">
+                            <h5 id="health-score" class="mb-2">0%</h5>
+                            <p class="mb-0 small" id="health-status">System Checking...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Logs -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-terminal me-2"></i> System Logs</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="logs-container" id="system-logs" style="
+                                height: 200px; 
+                                overflow-y: auto; 
+                                background: #f8f9fa; 
+                                padding: 15px; 
+                                border-radius: 5px; 
+                                font-family: 'Courier New', monospace;
+                                font-size: 0.85rem;
+                            ">
+                                <div class="log-entry text-success">
+                                    [${new Date().toLocaleTimeString()}] System initialized
+                                </div>
+                                <div class="log-entry text-info">
+                                    [${new Date().toLocaleTimeString()}] Firebase configuration loaded
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary mt-2" onclick="clearLogs()">
+                                <i class="fas fa-trash me-1"></i> Clear Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Modal Tambah Kandidat -->
+    <div class="modal fade" id="kandidatModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i> Tambah Kandidat</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="kandidatForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nama Kandidat *</label>
+                                    <input type="text" class="form-control" id="nama-kandidat" required style="border-radius: 12px;">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Foto (URL) *</label>
+                                    <input type="url" class="form-control" id="foto-kandidat" required style="border-radius: 12px;">
+                                    <div class="form-text">Masukkan URL gambar yang valid</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Visi *</label>
+                            <textarea class="form-control" id="visi-kandidat" rows="3" required style="border-radius: 12px;"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Misi *</label>
+                            <textarea class="form-control" id="misi-kandidat" rows="3" required style="border-radius: 12px;"></textarea>
+                        </div>
+                        <div id="custom-fields-container">
+                            <!-- Custom fields akan ditambahkan di sini -->
+                        </div>
+                        <button type="button" class="btn btn-outline-primary w-100 py-2" onclick="addCustomField()" style="border-radius: 12px;">
+                            <i class="fas fa-plus me-2"></i> Tambah Field Custom
+                        </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 12px;">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="addKandidat()" style="border-radius: 12px;">
+                        <i class="fas fa-save me-2"></i> Simpan Kandidat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="voting-system.js"></script>
+
+    <!-- Footer -->
+    <footer class="footer mt-5 py-4" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.2);">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-white">
+                        <i class="fas fa-vote-yea me-2"></i>
+                        Sistem Voting OSIS AT-THOHARIYAH
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0 text-white">
+                        <i class="fas fa-code me-2"></i>
+                        Developed with <i class="fas fa-heart text-danger mx-1"></i> by 
+                        <strong class="text-warning">IlhamDev</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
