@@ -18,7 +18,7 @@ const LICENSE_CONFIG = {
     LICENSE_KEY: "ATTHO-12345-67890-ABCDE-DEMO1",
     
     // TANGGAL BERAKHIR - format: YYYY-MM-DD
-    EXPIRY_DATE: "2026-10-23"
+    EXPIRY_DATE: "2025-10-23"
 };
 
 // Simple License System
@@ -2619,4 +2619,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize license system
     initializeLicenseSystem();
     checkLicenseAndLockFeatures();
+
 });
